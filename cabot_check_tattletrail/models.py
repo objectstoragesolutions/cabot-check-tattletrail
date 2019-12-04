@@ -41,7 +41,7 @@ class TattletrailStatusCheck(StatusCheck):
     def _run(self):
         result = StatusCheckResult(status_check=self)
         try:
-            redisConn = baseRedis.Redis(host=self.redis_config.redis_host, port=self.redis_config.redis_port, db=0, password=self.redis_config.redis_pass)
+            redisConn = baseRedis.Redis(host=os.environ['REDIS_HOST'], port=os.environ['REDIS_PORT'], db=0, password=os.environ['REDIS_PASS'])
             deadMonitors = self.findDeadProcesses(redisConn, self.monitor_id)
         except Exception as e:
             result.error = e.args
