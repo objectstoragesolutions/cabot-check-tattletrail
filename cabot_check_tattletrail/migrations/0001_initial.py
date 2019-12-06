@@ -17,7 +17,10 @@ class Migration(migrations.Migration):
             name='TattletrailStatusCheck',
             fields=[
                 ('statuscheck_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='cabotapp.StatusCheck')),
-                ('monitor_id', models.CharField(max_length=2000, null=False, blank=False))
+                ('monitor_name', models.CharField(max_length=100, null=False, blank=False)),
+                ('monitor_lifetime', models.IntegerField(null=False, blank=False)),
+                ('monitor_checkin', models.CharField(max_length=100)),
+                ('monitor_id', models.CharField(max_length=100))
             ],
             options={
                 'abstract': False,

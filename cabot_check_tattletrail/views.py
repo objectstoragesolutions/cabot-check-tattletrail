@@ -15,7 +15,9 @@ class TattleTrailCheckForm(StatusCheckForm):
         model = TattletrailStatusCheck
         fields = (
             'name',
-            'monitor_id',
+            'monitor_name',
+            'monitor_lifetime',
+            'monitor_checkin',
             'frequency',
             'active',
             'importance',
@@ -26,7 +28,10 @@ class TattleTrailCheckForm(StatusCheckForm):
             'host': forms.TextInput(attrs={
                 'style': 'width: 100%',
                 'placeholder': 'service.arachnys.com',
-            })
+            }),
+            'monitor_checkin': forms.TextInput(attrs={
+                'readonly':'readonly'
+                })
         })
 
 class TattletrailStatusCheckView(CheckCreateView):
