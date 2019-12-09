@@ -10,5 +10,5 @@ User can create status check for process using tattletrail API
 
 ##### As example: 
 
-```RUN pip install -i https://test.pypi.org/simple/ cabot-check-tattletrail==0.4.6```
+```RUN pip install -i https://test.pypi.org/simple/ cabot-check-tattletrail==0.9.0```
 
