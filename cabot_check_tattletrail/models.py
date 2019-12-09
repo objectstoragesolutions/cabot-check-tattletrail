@@ -25,12 +25,23 @@ class TattletrailStatusCheck(StatusCheck):
         )
     monitor_checkin = models.CharField(
         help_text=b'Checkin URL.',
-        max_length=100
+        max_length=100,
+        blank=True,
+        null=True
         )
-    monitor_id = models.CharField( 
-        max_length=100
+    monitor_id = models.CharField(
+        help_text=b'Monitor Id.',
+        max_length=100,
+        blank=True,
+        null=True
         )
-    
+    monitor_subscribers = models.CharField(
+        help_text=b'Subscribers emails, please separate them using comma.',
+        max_length=1000,
+        blank=True,
+        null=True
+        )
+
     def convert(self, data):
         if isinstance(data, bytes): return data.decode()
         if isinstance(data, dict): return dict(map(self.convert, data.items()))
@@ -54,30 +65,41 @@ class TattletrailStatusCheck(StatusCheck):
 
     def createNewMonitor(self):
         api_url = os.environ['Tattletrail_URL']
-        params = {"processname": self.monitor_name,"intervaltime": self.monitor_lifetime,"subscribers": []}
-        res = requests.post(url=api_url,data=params)
+        subscribers = []
+        try:
+            subscribers=self.monitor_subscribers.split(',')
+        except Exception as e:
+            subscribers = []
+
+        params = {"processname": self.monitor_name,"intervaltime": int(self.monitor_lifetime),"subscribers": subscribers}
+        res = requests.post(url=api_url,json=params)
+        return res
+
+    def checkIfMonitorIdExists(self):
+        try:
+            monitor_id_exists = len(self.monitor_id)
+        except Exception as e:
+            responsedata=self.createNewMonitor()
+            self.monitor_checkin=responsedata.json().get('checkinurl')
+            self.monitor_id=responsedata.json().get('monitorid')
 
     def _run(self):
+        self.checkIfMonitorIdExists()
         result = StatusCheckResult(status_check=self)
         try:
-            if '/checkin' not in self.monitor_checkin:
-                responsedata = self.createNewMonitor()
-                loadedResponse = json.loads(responsedata)
-                self.monitor_checkin = loadedResponse['checkinurl']
-                self.monitor_id = loadedResponse['monitorid']
-
             redisConn = baseRedis.Redis(host=os.environ['REDIS_HOST'], port=os.environ['REDIS_PORT'], db=0, password=os.environ['REDIS_PASS'])
             deadMonitors = self.findDeadProcesses(redisConn, self.monitor_id)
+            if ('id' in deadMonitors):
+                result.error = u"Monitor process {} is down! Please checkin using URL: {}".format(self.monitor_name,self.monitor_checkin)
+                result.succeeded = False
+                return result
+            else:
+                result.succeeded = True
+                return result
         except Exception as e:
             result.error = e.args
             result.succeeded = False
-        else:
-            if ('id' in deadMonitors):
-                result.error = u"Monitor process {} is down!".format(self.monitor_id)
-                result.succeeded = False
-            else:
-                result.succeeded = True
-        return result
+            return result
 
 
 

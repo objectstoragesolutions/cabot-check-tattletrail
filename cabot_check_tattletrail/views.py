@@ -18,6 +18,8 @@ class TattleTrailCheckForm(StatusCheckForm):
             'monitor_name',
             'monitor_lifetime',
             'monitor_checkin',
+            'monitor_id',
+            'monitor_subscribers',
             'frequency',
             'active',
             'importance',
@@ -25,13 +27,12 @@ class TattleTrailCheckForm(StatusCheckForm):
         )
         widgets = dict(**base_widgets)
         widgets.update({
-            'host': forms.TextInput(attrs={
-                'style': 'width: 100%',
-                'placeholder': 'service.arachnys.com',
-            }),
             'monitor_checkin': forms.TextInput(attrs={
                 'readonly':'readonly'
-                })
+                }),
+            'monitor_id': forms.TextInput(attrs={
+                'readonly':'readonly'
+                }),
         })
 
 class TattletrailStatusCheckView(CheckCreateView):
