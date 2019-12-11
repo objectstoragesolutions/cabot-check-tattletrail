@@ -12,3 +12,7 @@ User can create status check for process using tattletrail API
 
 ```RUN pip install -i https://test.pypi.org/simple/ cabot-check-tattletrail==0.9.0```
 
+## How to deploy:
+
+[Deployment process](https://github.com/objectstoragesolutions/cabot-check-tattletrail/wiki/How-to-deploy.)
+
