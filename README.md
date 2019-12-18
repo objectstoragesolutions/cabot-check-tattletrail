@@ -1,9 +1,10 @@
 # Tattletrail check for Cabot
 
 ## Usage
-User can create status check for process using tattletrail API
+Allows Cabot users to create status check for process using tattletrail.  Tattletrail is a REST wrapper over a REDIS server that allows users to monitor cron jobs/background processes that fail to check in within a specific interval.  
 
 ## How to install:
+You will need a REDIS server hosted somewhere in your environment.
 
 ### Use this file
 [cabot-check-tattletrail](https://test.pypi.org/project/cabot-check-tattletrail/)
