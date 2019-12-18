@@ -1,7 +1,8 @@
 # Tattletrail check for Cabot
 
 ## Usage
-Allows Cabot users to create status check for process using tattletrail.  Tattletrail is a REST wrapper over a REDIS server that allows users to monitor cron jobs/background processes that fail to check in within a specific interval.  
+Allows Cabot users to create a status check for a background process. Similar to a DeadmanSnitch, the service acts to ensure that processes stay running. It uses Tattletrail a server where background processes can 'check-in'.  Tattletrail is a simple REST wrapper over a REDIS server that allows users to monitor cron jobs/background processes that fail to check in within a specific interval.      If you do not wish to use Tattletrail, background jobs could talk directly to REDIS to tell Cabot they have 'checked-in'. 
+ 
 
 ## How to install:
 You will need a REDIS server hosted somewhere in your environment.
