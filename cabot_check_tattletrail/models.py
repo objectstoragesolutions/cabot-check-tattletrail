@@ -72,7 +72,8 @@ class TattletrailStatusCheck(StatusCheck):
             subscribers = []
 
         params = {"processname": self.monitor_name,"intervaltime": int(self.monitor_lifetime),"subscribers": subscribers}
-        res = requests.post(url=api_url,json=params)
+        header = self.prepareHeader()
+        res = requests.post(url = api_url, json = params, headers = header)
         return res
 
     def checkIfMonitorIdExists(self):
@@ -82,6 +83,11 @@ class TattletrailStatusCheck(StatusCheck):
             responsedata=self.createNewMonitor()
             self.monitor_checkin=responsedata.json().get('checkinurl')
             self.monitor_id=responsedata.json().get('monitorid')
+
+    def prepareHeader(self):
+        auth_token = os.environ['AUTH_TOKEN']
+        header = {'Authorization': 'Bearer ' + auth_token}
+        return header
 
     def _run(self):
         self.checkIfMonitorIdExists()
