@@ -22,7 +22,7 @@ You will need a REDIS server hosted somewhere in your environment.
 
 TattleTrail the server acts as a wrapper around REDIS and allows processes to 'check-in' while they are alive at regular intervals. 
 
-(https://github.com/objectstoragesolutions/tattletrail)
+[TattleTrail](https://github.com/objectstoragesolutions/tattletrail)
 
 ## Sponsors
 
