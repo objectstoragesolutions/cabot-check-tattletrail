@@ -18,3 +18,15 @@ You will need a REDIS server hosted somewhere in your environment.
 
 [Deployment process](https://github.com/objectstoragesolutions/cabot-check-tattletrail/wiki/How-to-deploy.)
 
+## Learn more about TattleTrail
+
+TattleTrail the server acts as a wrapper around REDIS and allows processes to 'check-in' while they are alive at regular intervals. 
+
+(https://github.com/objectstoragesolutions/tattletrail)
+
+## Sponsors
+
+We want to thank Excell Solutions for funding this open source project.
+
+[Excell Solutions](http://www.excell.solutions/)
+
