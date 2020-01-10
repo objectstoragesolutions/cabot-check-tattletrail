@@ -1,6 +1,5 @@
 from django.db import models
 from cabot.cabotapp.models import StatusCheck, StatusCheckResult
-import redis as baseRedis
 import json
 import os
 import requests
@@ -12,6 +11,7 @@ class TattletrailStatusCheck(StatusCheck):
     edit_url_name = 'update-tattletrail-check'
     duplicate_url_name = 'duplicate-tattletrail-check'
     icon_class = 'glyphicon-road'
+    api_url = os.environ['Tattletrail_URL']
     monitor_name = models.CharField(
         help_text=b'Monitor Name',
         null=False,
@@ -53,18 +53,7 @@ class TattletrailStatusCheck(StatusCheck):
         if monitorDetails.get('IsDown') == 'True': return True
         return False
 
-    def findDeadProcesses(self, redisConnection, monitorId):
-        deadMonitor = {}
-        allKeys = self.convert(redisConnection.keys('*'))
-        if monitorId in allKeys:
-            monitorDetails = redisConnection.hgetall(monitorId)
-            if self.monitorIsDown(self.convert(monitorDetails)):
-                deadMonitor['id'] = monitorId
-                deadMonitor['monitordetails'] = monitorDetails
-        return deadMonitor
-
     def createNewMonitor(self):
-        api_url = os.environ['Tattletrail_URL']
         subscribers = []
         try:
             subscribers=self.monitor_subscribers.split(',')
@@ -73,7 +62,7 @@ class TattletrailStatusCheck(StatusCheck):
 
         params = {"processname": self.monitor_name,"intervaltime": int(self.monitor_lifetime),"subscribers": subscribers}
         header = self.prepareHeader()
-        res = requests.post(url = api_url, json = params, headers = header)
+        res = requests.post(url = self.api_url, json = params, headers = header)
         return res
 
     def checkIfMonitorIdExists(self):
@@ -89,22 +78,55 @@ class TattletrailStatusCheck(StatusCheck):
         header = {'Authorization': 'Bearer ' + auth_token}
         return header
 
+    def buildRawData(self, monitorData):
+        resultString = u"""
+                          Monitor with name {}
+                          was created {}
+                          but checked last time at {}""".format(monitorData.get('processName'),monitorData.get('dateOfCreation'),monitorData.get('lastCheckIn'))
+        return resultString
+
+    def findMonitor(self):
+        get_url = self.api_url + '/' + self.monitor_id
+        header = self.prepareHeader()
+        response = requests.get(url = get_url, headers = header)
+        return response
+
+
     def _run(self):
-        self.checkIfMonitorIdExists()
         result = StatusCheckResult(status_check=self)
         try:
-            redisConn = baseRedis.Redis(host=os.environ['REDIS_HOST'], port=os.environ['REDIS_PORT'], db=0, password=os.environ['REDIS_PASS'])
-            deadMonitors = self.findDeadProcesses(redisConn, self.monitor_id)
-            if ('id' in deadMonitors):
-                result.error = u"Monitor process {} is down! Please checkin using URL: {}".format(self.monitor_name,self.monitor_checkin)
+            self.checkIfMonitorIdExists()
+            monitorResponse = self.findMonitor()
+            if (monitorResponse.status_code == 401):
+                result.error = u"Cant find monitor process {} with id: {}. Probably it was deleted.".format(self.monitor_name,self.monitor_id)
                 result.succeeded = False
+                result.raw_data = '401 UNAUTHORIZED'
                 return result
-            else:
-                result.succeeded = True
+            if (monitorResponse.status_code == 404):
+                result.error = u"Cant find monitor process {} with id: {}. Probably it was deleted.".format(self.monitor_name,self.monitor_id)
+                result.succeeded = False
+                result.raw_data = '404 NOT FOUND'
                 return result
+            if (monitorResponse.status_code == 200):
+                monitorData = monitorResponse.json().get('monitorDetails')
+                if (monitorData.get('isDown')):
+                    result.error = u"Monitor process {} is down! Please checkin using URL: {}".format(self.monitor_name,self.monitor_checkin)
+                    result.succeeded = False
+                    result.raw_data = self.buildRawData(monitorData)
+                    return result
+                else:
+                    result.succeeded = True
+                    result.error = 'None'
+                    result.raw_data = 'Monitor is alive!'
+                    return result
+            result.succeeded = True
+            result.error = 'Unexpected response!'
+            result.raw_data = u'Response code is: {}'.format(monitorResponse.status_code)
+            return result
         except Exception as e:
             result.error = e.args
             result.succeeded = False
+            result.raw_data = e.args
             return result
 
 
