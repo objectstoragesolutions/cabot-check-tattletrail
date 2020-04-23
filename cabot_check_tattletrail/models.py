@@ -16,7 +16,7 @@ class TattletrailStatusCheck(StatusCheck):
         help_text=b'Monitor Name',
         null=False,
         blank=False,
-        max_length=100
+        max_length=200
         )
     monitor_lifetime = models.IntegerField(
         help_text=b'Monitor interval time in seconds',
@@ -25,19 +25,19 @@ class TattletrailStatusCheck(StatusCheck):
         )
     monitor_checkin = models.CharField(
         help_text=b'Checkin URL.',
-        max_length=100,
+        max_length=200,
         blank=True,
         null=True
         )
     monitor_id = models.CharField(
         help_text=b'Monitor Id.',
-        max_length=100,
+        max_length=200,
         blank=True,
         null=True
         )
     monitor_subscribers = models.CharField(
         help_text=b'Subscribers emails, please separate them using comma.',
-        max_length=1000,
+        max_length=200,
         blank=True,
         null=True
         )
