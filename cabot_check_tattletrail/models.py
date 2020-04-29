@@ -16,7 +16,7 @@ class TattletrailStatusCheck(StatusCheck):
         help_text=b'Monitor Name',
         null=False,
         blank=False,
-        max_length=200
+        max_length=250
         )
     monitor_lifetime = models.IntegerField(
         help_text=b'Monitor interval time in seconds',
@@ -25,19 +25,19 @@ class TattletrailStatusCheck(StatusCheck):
         )
     monitor_checkin = models.CharField(
         help_text=b'Checkin URL.',
-        max_length=200,
+        max_length=250,
         blank=True,
         null=True
         )
     monitor_id = models.CharField(
         help_text=b'Monitor Id.',
-        max_length=200,
+        max_length=250,
         blank=True,
         null=True
         )
     monitor_subscribers = models.CharField(
         help_text=b'Subscribers emails, please separate them using comma.',
-        max_length=200,
+        max_length=250,
         blank=True,
         null=True
         )
@@ -65,11 +65,28 @@ class TattletrailStatusCheck(StatusCheck):
         res = requests.post(url = self.api_url, json = params, headers = header)
         return res
 
+    def updateMonitor(self):
+        subscribers = []
+        try:
+            subscribers=self.monitor_subscribers.split(',')
+        except Exception as e:
+            subscribers = []
+
+        params = {"processname": self.monitor_name,"intervaltime": int(self.monitor_lifetime),"subscribers": subscribers}
+        header = self.prepareHeader()
+        api_url_for_update = self.api_url + '/' + self.monitor_id
+        requests.put(url = api_url_for_update, json = params, headers = header)
+
+    def deleteMonitor(self):
+	header = self.prepareHeader()
+        api_url_for_delete = self.api_url + '/' + self.monitor_id
+        requests.delete(url = api_url_for_delete, headers = header)
+
     def checkIfMonitorIdExists(self):
         try:
             monitor_id_exists = len(self.monitor_id)
         except Exception as e:
-            responsedata=self.createNewMonitor()
+            responsedata = self.createNewMonitor()
             self.monitor_checkin=responsedata.json().get('checkinurl')
             self.monitor_id=responsedata.json().get('monitorid')
 
@@ -90,7 +107,6 @@ class TattletrailStatusCheck(StatusCheck):
         header = self.prepareHeader()
         response = requests.get(url = get_url, headers = header)
         return response
-
 
     def _run(self):
         result = StatusCheckResult(status_check=self)
@@ -129,8 +145,10 @@ class TattletrailStatusCheck(StatusCheck):
             result.raw_data = e.args
             return result
 
-
-
-
-
-
+    def save(self, *args, **kwargs):
+        self.updateMonitor()
+        return super(StatusCheck, self).save(*args, **kwargs)
+    
+    def delete(self, *args, **kwargs):
+        self.deleteMonitor()
+        return super(StatusCheck, self).delete(*args, **kwargs)
