@@ -66,16 +66,16 @@ class TattletrailStatusCheck(StatusCheck):
         return res
 
     def updateMonitor(self):
-        subscribers = []
-        try:
-            subscribers=self.monitor_subscribers.split(',')
-        except Exception as e:
+        if self.monitor_id:
             subscribers = []
-
-        params = {"processname": self.monitor_name,"intervaltime": int(self.monitor_lifetime),"subscribers": subscribers}
-        header = self.prepareHeader()
-        api_url_for_update = self.api_url + '/' + self.monitor_id
-        requests.put(url = api_url_for_update, json = params, headers = header)
+            try:
+                subscribers=self.monitor_subscribers.split(',')
+            except Exception as e:
+                subscribers = []
+            params = {"processname": self.monitor_name,"intervaltime": int(self.monitor_lifetime),"subscribers": subscribers}
+            header = self.prepareHeader()
+            api_url_for_update = self.api_url + '/' + self.monitor_id
+            requests.put(url = api_url_for_update, json = params, headers = header)
 
     def deleteMonitor(self):
 	header = self.prepareHeader()
@@ -146,9 +146,10 @@ class TattletrailStatusCheck(StatusCheck):
             return result
 
     def save(self, *args, **kwargs):
+        ret = super(TattletrailStatusCheck, self).save(*args, **kwargs)
         self.updateMonitor()
-        return super(StatusCheck, self).save(*args, **kwargs)
+        return ret
     
     def delete(self, *args, **kwargs):
         self.deleteMonitor()
-        return super(StatusCheck, self).delete(*args, **kwargs)
+        return super(TattletrailStatusCheck, self).delete(*args, **kwargs)
