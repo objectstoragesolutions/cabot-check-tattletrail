@@ -12,7 +12,7 @@ You will need a REDIS server hosted somewhere in your environment.
 
 ##### As example: 
 
-```RUN pip install -i https://test.pypi.org/simple/ cabot-check-tattletrail==0.9.0```
+```RUN pip install -i https://test.pypi.org/simple/ cabot-check-tattletrail==1.1.4```
 
 ## How to deploy:
 
